@@ -1,9 +1,99 @@
-import React from 'react';
+"use client";
+
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function Home() {
+  const [isOpened, setIsOpened] = useState(false);
+  const [guestName, setGuestName] = useState('Tamu Undangan');
+  // State dan Ref untuk Audio
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef(null);
+
+  // Mencegah user melakukan scroll saat cover masih tertutup
+  useEffect(() => {
+    // 1. Atur overflow scroll
+    if (!isOpened) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    // 2. Ambil parameter nama dari URL (contoh: ?to=Budi+Sudarsono)
+    const params = new URLSearchParams(window.location.search);
+    const toParam = params.get('to');
+    if (toParam) {
+      setGuestName(toParam); // Mengganti 'Tamu Undangan' dengan nama dari URL
+    }    
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isOpened]);
+
+  // Efek untuk memutar musik otomatis saat undangan dibuka
+  useEffect(() => {
+    if (isOpened && audioRef.current) {
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch((error) => console.log("Autoplay diblokir browser:", error));
+    }
+  }, [isOpened]);
+
+  // Fungsi Toggle Play/Pause
+  const toggleAudio = () => {
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play();
+      setIsPlaying(true);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-[#FAFAF9] text-stone-800 font-sans relative overflow-hidden">
       
+      {/* ELEMEN AUDIO TERSEMBUNYI */}
+      <audio ref={audioRef} src="/1000x.mp3" loop preload="auto"></audio>      
+      
+      {/* =========================================
+          COVER OVERLAY (FITUR BUKA UNDANGAN) 
+          ========================================= */}
+      <div 
+        className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-stone-900 text-white transition-transform duration-1000 ease-in-out overflow-hidden ${
+          isOpened ? '-translate-y-full' : 'translate-y-0'
+        }`}
+      >
+        <div 
+          className="absolute inset-0 z-0 bg-[url('/Ring.jpg')] bg-cover bg-center bg-no-repeat opacity-40"
+        ></div>
+        
+        <div className="relative z-10 text-center px-6 flex flex-col items-center">
+          <h3 className="text-sm md:text-base tracking-[0.3em] uppercase text-amber-400 mb-6">
+            The Wedding Of
+          </h3>
+          <h1 className="text-5xl md:text-7xl font-serif mb-8 tracking-tight">
+            Khawari & Vina
+          </h1>
+          
+          <div className="mb-12 text-stone-300">
+            <p className="text-sm mb-1">Kepada Yth.</p>
+            <p className="text-lg font-semibold text-white">{guestName}</p>
+          </div>
+
+          <button 
+            onClick={() => setIsOpened(true)}
+            className="px-8 py-3 bg-amber-700 hover:bg-amber-600 text-white rounded-full text-sm tracking-wide transition-colors duration-300 shadow-lg flex items-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"></path>
+            </svg>
+            Buka Undangan
+          </button>
+        </div>
+      </div>
+
+      {/* =========================================
+          KONTEN UTAMA (Disembunyikan saat cover aktif)
+          ========================================= */}
       {/* Background Pastel Doodles & Accents */}
       <div className="absolute top-10 left-10 w-32 h-32 bg-rose-100 rounded-full mix-blend-multiply filter blur-2xl opacity-60"></div>
       <div className="absolute top-40 right-10 w-40 h-40 bg-orange-100 rounded-full mix-blend-multiply filter blur-2xl opacity-60"></div>
@@ -101,6 +191,29 @@ export default function Home() {
       <footer className="py-8 text-center text-stone-400 text-sm bg-stone-100 border-t border-stone-200">
         <p>Created with Love By Khawari_MD</p>
       </footer>
+
+      {/* =========================================
+          FLOATING BUTTON MUSIC (Muncul setelah cover dibuka)
+          ========================================= */}
+      {isOpened && (
+        <button
+          onClick={toggleAudio}
+          className="fixed bottom-6 right-6 z-[60] w-12 h-12 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-md shadow-lg border border-stone-200 text-amber-700 hover:bg-white transition-all duration-300"
+          aria-label={isPlaying ? "Pause Music" : "Play Music"}
+        >
+          {isPlaying ? (
+            // Ikon Pause
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+            </svg>
+          ) : (
+            // Ikon Play
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          )}
+        </button>
+      )}
 
     </main>
   );
