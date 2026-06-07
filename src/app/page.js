@@ -52,7 +52,7 @@ export default function Home() {
     <main className="min-h-screen bg-[#FAFAF9] text-stone-800 font-sans relative overflow-hidden">
       
       {/* ELEMEN AUDIO TERSEMBUNYI */}
-      <audio ref={audioRef} src="/1000x.mp3" loop preload="auto"></audio>      
+      <audio ref={audioRef} src="/1000X.mp3" loop preload="auto"></audio>      
       
       {/* =========================================
           COVER OVERLAY (FITUR BUKA UNDANGAN) 
